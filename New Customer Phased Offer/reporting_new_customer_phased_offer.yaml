@@ -1,0 +1,35 @@
+upload_template: # path to yaml file to upload to database
+  - sync_home
+  - Offer Campaign Backlog Reads
+  - New Customer Phased Offer
+  - upload_new_customer_phased_offer.yaml
+
+campaign_discount_names:
+  - discount_name: $15 off 4th and 6th box
+    columns:
+      test_group: test
+      subscription_servings: 2servings
+  - discount_name: $20 off 4th and 6th box
+    columns:
+      test_group: test
+      subscription_servings: [3serving, 4serving]
+
+segment:
+  early_life
+
+test_group_segment:
+  responder
+
+date_ranges:
+  start_date: 2017-09-07
+  end_dates:
+    promo_period: 2017-12-06
+    post_promo: current_date
+
+metrics:
+  - _4th_boxes_ordered
+  - _6th_boxes_ordered
+  - cancelation_rate
+  - total_boxes_ordered
+  - avg_boxes_ordered
+  - aov

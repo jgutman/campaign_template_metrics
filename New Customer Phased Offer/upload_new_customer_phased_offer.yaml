@@ -1,0 +1,60 @@
+data_files:
+  # List the path to the folder containing all data files
+  # Assumes path starts with $HOME directory
+  # Path can be listed as a single string or with each subfolder on its own line
+  - Google Drive File Stream
+  - My Drive
+  - Campaign Prioritized Reads
+  - New Customer 4th and 6th Box Offer Lists
+
+groups:
+  # Create a column in the database for each group
+  # Search in the filename for a value that matches the corresponding regex
+  # For example, creates a column called test_group with value Control
+  # and a column called subscription_plan with value 2x3 based on filename
+  test_group: "control|test"
+  subscription_servings: "[234]serving|control"
+  boxes_received: "received(1st|2nd|3rd)box"
+
+include_cols:
+  # Names of any columns to be extracted from the CSV data files
+  - user_id
+  - email
+  - subscription_dinners_per_week
+  - subscription_people_per_week
+  - shipped_box_count
+  - subscription_active
+  - next_delivery_date
+  - menu_order_count
+
+s3_location:
+  # Where in S3 to upload the combined CSV file
+  bucket: plated-redshift-etl
+  # Folder can be listed as a single string or with each subfolder on its own line
+  # Should create folder if folder does not exist in bucket
+  folder:
+    - manual
+    - campaigns_jackie
+    - new_customer_phased_offer
+  # Filename to be written to, will overwrite if file already exists in folder
+  # Will add CSV extension if not provided
+  filename: phased_offer_active_early_life
+
+s3_readwrite_path:
+  # Uses Theo's code from plated-airflow repo
+  # Will download the repo and relevant code to the following path
+  # If repo is already downloaded, provided the path to the model_hosting_libraries
+  - plated-airflow
+  - dags
+  - model_hosting_libraries
+
+table_name:
+  # Schema and table name to upload to in Redshift
+  # Table should not already exist
+  # If table name does not start with 'analytics.' the prefix will be added
+  analytics.new_customer_phased_offer
+
+username_privileges:
+  # All usernames to grant select privileges on the newly created table to
+  - production_read_only
+  - analytics_team

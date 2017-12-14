@@ -1,0 +1,4 @@
+test_group,promo_period,responder,order_rate,total,aov,unsubscribe_rate,total_boxes_ordered,gov,cancelations
+control,promo_period,FALSE,225.50%,1000,$74.93 ,49.40%,2255,"$168,976.55 ",494
+test,promo_period,FALSE,20.77%,3524,$69.28 ,55.42%,732,"$50,714.65 ",1953
+test,promo_period,TRUE,358.91%,5339,$71.13 ,40.08%,19162,"$1,363,074.40 ",2140

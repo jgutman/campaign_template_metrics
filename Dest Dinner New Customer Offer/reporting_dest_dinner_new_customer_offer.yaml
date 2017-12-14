@@ -1,0 +1,27 @@
+upload_template: # path to yaml file to upload to database
+  - sync_home
+  - Offer Campaign Backlog Reads
+  - Dest Dinner New Customer Offer
+  - upload_dest_dinner_new_customer_offer.yaml
+
+campaign_discount_names:
+  - discount_name: $5 off next 10 boxes
+    columns:
+      test_group: test
+
+segment:
+  early_life
+
+test_group_segment:
+  responder
+
+date_ranges:
+  start_date: 2017-10-02
+  end_dates:
+    promo_period: current_date
+
+metrics:
+  - cancelation_rate
+  - total_boxes_ordered
+  - avg_boxes_ordered
+  - aov

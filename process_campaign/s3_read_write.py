@@ -6,7 +6,7 @@ import os, logging
 
 class S3ReadWrite:
 
-    def __init__(self, folder, bucket):
+    def __init__(self, bucket, folder):
         self.client = boto3.client('s3')
         self.resource = boto3.resource('s3')
         self.folder = folder
@@ -56,20 +56,22 @@ class S3ReadWrite:
         self._bucket = new_bucket
 
     def read_from_S3_csv(self, csv_name, **read_csv_kwargs):
-        value = '{folder}/{csv_path}/{csv_name}.csv'.format(
-                    folder = self.folder,
-                    csv_path = csv_path,
-                    csv_name = csv_name)
+        value = self.client.get_object(
+                Bucket = self.bucket,
+                Key ='{folder}/{csv_path}/{csv_name}.csv'.format(
+                        folder = self.folder,
+                        csv_path = csv_path,
+                        csv_name = csv_name)
                 )['Body'].read()
         return pd.read_csv(BytesIO(value),**read_csv_kwargs)
 
     def read_from_S3_csv_with_path(self, csv_path, csv_name):
         value = self.client.get_object(
-            Bucket=self.bucket,
-            Key= '{folder}/{csv_path}/{csv_name}.csv'.format(
-                    folder = self.folder,
-                    csv_path = csv_path,
-                    csv_name = csv_name)
+                Bucket=self.bucket,
+                Key= '{folder}/{csv_path}/{csv_name}.csv'.format(
+                        folder = self.folder,
+                        csv_path = csv_path,
+                        csv_name = csv_name)
                 )['Body'].read()
         return pd.read_csv(BytesIO(value))
 

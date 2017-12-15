@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from pandas.io.sql import get_schema
 import logging
 from argparse import ArgumentParser
+from s3_read_write import S3ReadWrite
 
 
 def process_send_lists(files, test_matrix):
@@ -50,6 +51,17 @@ def process_single_file(path, target):
     data['target_name'] = target
     return data
 
+
+def upload_to_s3( data, bucket, s3dir, info ):
+    s3_writer = S3ReadWrite(bucket = bucket, folder = s3dir)
+    csv_path = info.campaign_name.strip()
+    csv_name = info.campaign_short_name.strip().lower()
+    s3_writer.put_dataframe_to_S3(csv_path = csv_path,
+        csv_name = csv_name, dataframe = data)
+    fullpath = str(Path(s3dir, csv_path, '{}.csv'.format(csv_name)))
+    return fullpath, csv_name
+
+
 def main(args):
     logging.basicConfig(
         level=logging.INFO,
@@ -58,15 +70,18 @@ def main(args):
         style = '{' )
 
     campaign_dir = Path(args.root_dir, args.campaign_dir).absolute()
-    template_path =  [str(x) for x in p.glob('**/*_template.xlsx')][0]
+    template_path =  [str(x) for x in campaign_dir.glob('**/*_template.xlsx')][0]
     template = pd.read_excel(template_path)
 
     test_matrix_cols = ['test_group', 'segment_group', 'offer_group',
         'target_name', 'creative_template_name', 'population_name',
         'offer_campaign_name', 'discount_name', 'message_offer']
 
+    campaign_info = template.drop(columns = test_matrix_cols).iloc[0]
+
     data = process_send_lists(campaign_dir, template[test_matrix_cols])
-    # upload to s3
+    s3_path, table_name = upload_to_s3(data, args.bucket, args.s3dir,
+        info = campaign_info)
     # upload from s3 to redshift
 
 if __name__ == '__main__':
@@ -78,5 +93,11 @@ if __name__ == '__main__':
             'Reformatted Prioritized Campaign Lists')))
     parser.add_argument('campaign_dir',
         help = 'name of directory for desired campaign')
+    parser.add_argument('--bucket',
+        help = 'S3 bucket to save send lists',
+        default = 'plated-redshift-etl')
+    parser.add_argument('--s3dir',
+        help = 'S3 directory within bucket to save send lists',
+        default = 'manual/campaigns_jackie')
     args = parser.parse_args()
     main(args)

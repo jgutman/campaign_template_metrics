@@ -67,19 +67,19 @@ for all campaigns.
     if ongoing. May be left blank if no long term read period
   - **Campaign KPIs:** `TRUE` if the KPI is desired and relevant to the campaign,
     `FALSE` if it can be omitted from the reporting.
-    KPIs are not cumulative--they are computed over the specified period only.
-    - `cancelations`: the number of users canceling at any point during the period (regardless
-      of subsequent reactivation)
-    - `cancelation_rate`: the percentage of users canceling at any point out of all users in this
-      responder segment
+    KPIs are cumulative--they are computed from the campaign start date to the end of the specified period.
+    - `cancelations`: the number of users canceling at any point during the period
+      (regardless of subsequent reactivation)
+    - `cancelation_rate`: the percentage of users canceling at any point out of all users
+      in this responder segment
     - `new_activations`: the number of prospects activating at any point during the period
       (regardless of subsequent cancelation)
-    - `activation_rate`: the percentage of users activating at any point out of all prospects in this
-      responder segment
-    - `reactivations`: the number of users reactivating at any point during the period (regardless
-      of subsequent cancelation)
-    - `reactivation_rate`: the percentage of users reactivating at any point out of all users in this
-      responder segment
+    - `activation_rate`: the percentage of users activating at any point out of all prospects
+      in this responder segment
+    - `reactivations`: the number of users reactivating at any point during the period
+      (regardless of subsequent cancelation)
+    - `reactivation_rate`: the percentage of users reactivating at any point out of all users
+      in this responder segment
     - `total_boxes_ordered`: the total number of boxes ordered during the period
     - `avg_boxes_ordered`: the average number of boxes ordered during the period across all users
       in this responder segment

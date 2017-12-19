@@ -1,9 +1,11 @@
 import pandas as pd
+import numpy as np
 from sqlalchemy import create_engine, text, MetaData, Table
-import logging, re, os, sys
+import logging, re, sys
 from datetime import datetime
 from argparse import ArgumentParser
-from process_campaign.upload_redshift import extract_campaign_info
+from pathlib import Path
+from upload_redshift import extract_campaign_info
 
 
 def offer_redemption(tm):
@@ -178,8 +180,7 @@ def build_query(info, test_matrix):
         , {responder_action} AS responder
         FROM individual_metrics
         WHERE promo_period = 'promo_period'
-        """.format(
-            responder_action = info.responder_action)
+        """.format(responder_action = info.responder_action)
 
     if info.redeemed_offer_discount:
         boolean_metrics.append('offer_redeemed')
@@ -192,7 +193,7 @@ def build_query(info, test_matrix):
     aggregates = """SELECT a.promo_period
         , '{start_date}' AS start_date
         , a.end_date
-        , r.responder
+        , COALESCE(r.responder, false) AS responder
         , {test_matrix_cols}
         , COUNT(*) AS total_segment_size
         {agg_bools}
@@ -321,42 +322,51 @@ def compute_and_output_metrics(data, info, path, tm_cols):
 
     if 'reactivation_rate' in metrics:
         data['reactivation_rate'] = ["{:.2%}".format(k)
+            if np.isfinite(k) else ''
             for k in data.reactivations/data.segment_responder_size]
 
     if 'activation_rate' in metrics:
         data['activation_rate'] = ["{:.2%}".format(k)
+            if np.isfinite(k) else ''
             for k in data.new_activations/data.segment_responder_size]
 
     if 'cancelation_rate' in metrics:
         data['cancelation_rate'] = ["{:.2%}".format(k)
+            if np.isfinite(k) else ''
             for k in data.cancelations/data.segment_responder_size]
 
     if 'avg_boxes_ordered' in metrics:
         data['avg_boxes_ordered'] = ["{:.2}".format(k)
+            if np.isfinite(k) else ''
             for k in data.total_boxes_ordered/data.segment_responder_size]
 
     if 'aov' in metrics:
         data['aov'] = ["${:.2f}".format(k)
+            if np.isfinite(k) else ''
             for k in data.gov/data.total_boxes_ordered]
 
     if 'gov' in metrics:
         data['gov'] = ["${:,.2f}".format(k)
+            if np.isfinite(k) else ''
             for k in data.gov]
 
     if 'dessert_take_rate' in metrics:
         data['dessert_take_rate'] = ["{:.2%}".format(k)
+            if np.isfinite(k) else ''
             for k in data.desserts_ordered/data.total_boxes_ordered]
 
     if 'pct_redeemed' in metrics:
         data['pct_redeemed'] = ["{:.2%}".format(k)
+            if np.isfinite(k) else ''
             for k in data.redeemed_offer_discount/data.segment_responder_size]
 
     if 'pct_active_at_end' in metrics:
         data['pct_active_at_end'] = ["{:.2%}".format(k)
+            if np.isfinite(k) else ''
             for k in data.total_active_at_end/data.segment_responder_size]
 
     data = data[id_cols + ['promo_period'] + metrics]
-    pivot = data.pivot_table(index = ['target_name', 'responder'],
+    pivot = data.pivot_table(index = id_cols,
         columns = 'promo_period', aggfunc = lambda x: x)
 
     promo_periods = [i.replace('_end_date', '')
@@ -368,6 +378,13 @@ def compute_and_output_metrics(data, info, path, tm_cols):
         for i in promo_periods]
 
     data_wide = tm_data.join(data_wide)
+    responders = ['responder' if i else 'non-responder'
+        for i in data_wide.index.levels[1]]
+    data_wide.index = data_wide.index.set_levels(
+        responders, level = 'responder')
+    data_wide = data_wide.rename_axis(
+        ['target name', 'responder ({})'.format(info.responder_action)])
+    data_wide = data_wide.rename(columns = lambda x: x.replace('_', ' '))
     data_wide.to_csv(path, index = True)
 
 
@@ -378,12 +395,12 @@ def main(args):
         datefmt = '%m-%d %H:%M:%S',
         style = '{' )
 
-    {logging.info('Input argument {} set to {}'.format(k, v)
-        for k,v in vars(args).items()}
+    [logging.info('Input argument {} set to {}'.format(k, v))
+        for k,v in vars(args).items()]
 
     campaign_dir, test_matrix, campaign_info = extract_campaign_info(args)
     query = build_query(campaign_info, test_matrix)
-    with open(os.path.join(campaign_dir, 'generated_query.sql'), 'w') as f:
+    with open(str(Path(campaign_dir, 'generated_query.sql')), 'w') as f:
         f.write(query)
 
     engine = create_engine("{driver}://{host}:{port}/{dbname}".format(
@@ -408,8 +425,9 @@ def main(args):
 
     output_file = '{}_report_metrics.csv'.format(
         campaign_info.campaign_name.strip())
-    compute_and_output_metrics(data, campaign_info, test_matrix.columns,
-        path = Path(campaign_dir, output_file)
+    compute_and_output_metrics(data, campaign_info,
+        tm_cols = test_matrix.columns,
+        path = Path(campaign_dir, output_file))
 
 
 if __name__ == '__main__':

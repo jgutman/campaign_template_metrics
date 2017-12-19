@@ -610,8 +610,7 @@ should correspond to one and only one row of the test matrix for that campaign.<
 <p>Additional columns can be included in the campaign lists but will be ignored.
 All campaign lists for the same campaign should feature the same user identifier.</p>
 <h2 id="campaign-template">Campaign template</h2>
-<p>Please see example campaign templates for reference. Column names should be identical
-for all campaigns.</p>
+<p>Please see example campaign templates for reference. Column names should be identical for all campaigns.</p>
 <ul>
 <li>Column names highlighted in yellow should be filled out for every row in the test matrix.</li>
 <li>Column names highlighted in blue only need to be filled out for the first row.</li>
@@ -620,76 +619,53 @@ for all campaigns.</p>
 <p>(<strong>single value per campaign</strong>)</p>
 <ul>
 <li><code>campaign_name</code>: A plain English name for the campaign</li>
-<li><code>campaign_short_name</code>: A code-friendly name for the campaign. All lowercase, no spaces or
-special characters except underscores. May include a number but not as the first letter</li>
-<li><code>responder_action</code>: The defining action that differentiates responders from non-responders.
-The action must be taken during the promo period
-May be one of the following values:<ul>
+<li><code>campaign_short_name</code>: A code-friendly name for the campaign. All lowercase, no spaces or special characters except underscores. May include a number but not as the first letter</li>
+<li><code>responder_action</code>: The defining action that differentiates responders from non-responders. The action must be taken during the promo period. May be one of the following values:<ul>
 <li><code>reactivated</code></li>
 <li><code>activated</code></li>
-<li><code>ordered_{1st/2nd/3rd/nth}_box</code> for any number n indicating the user has received that
-number of boxes since joining Plated</li>
-<li><code>desserts_ordered &gt;= {n}</code> for any number n indicating the user has ordered at least
-this many desserts during the promo period</li>
-<li><code>total_boxes_ordered &gt;= {n}</code> for any number n indicating the user has ordered at least
-this many boxes during the promo period</li>
+<li><code>ordered_{1st/2nd/3rd/nth}_box</code> for any number n indicating the user has received that number of boxes since joining Plated</li>
+<li><code>desserts_ordered &gt;= {n}</code> for any number n indicating the user has ordered at least this many desserts during the promo period</li>
+<li><code>total_boxes_ordered &gt;= {n}</code> for any number n indicating the user has ordered at least this many boxes during the promo period</li>
 </ul>
 </li>
 <li><code>start_date</code>: the start date for the campaign and promo period</li>
-<li><code>promo_period_end_date</code>: the end date for the promo period, or <code>current_date</code> if ongoing</li>
-<li><code>post_promo_period_end_date</code>: the end date for the post promo period, or <code>current_date</code>
-if ongoing. May be left blank if no post promo period</li>
-<li><code>long_term_end_date</code>: the end date for the long term read period, or <code>current_date</code>
-if ongoing. May be left blank if no long term read period</li>
+<li><code>promo_period_end_date</code>: the end date for the promo period, or <code>current_date</code> if still ongoing</li>
+<li><code>post_promo_period_end_date</code>: the end date for the post promo period, or <code>current_date</code> if still ongoing. May be left blank if no post promo period</li>
+<li><code>long_term_end_date</code>: the end date for the long term read period, or <code>current_date</code> if still ongoing. May be left blank if no long term read period</li>
 <li><strong>Campaign KPIs:</strong> <code>TRUE</code> if the KPI is desired and relevant to the campaign,
 <code>FALSE</code> if it can be omitted from the reporting.
-KPIs are not cumulative--they are computed over the specified period only.<ul>
-<li><code>cancelations</code>: the number of users canceling at any point during the period (regardless
-of subsequent reactivation)</li>
-<li><code>cancelation_rate</code>: the percentage of users canceling at any point out of all users in this
-responder segment</li>
-<li><code>new_activations</code>: the number of prospects activating at any point during the period
-(regardless of subsequent cancelation)</li>
-<li><code>activation_rate</code>: the percentage of users activating at any point out of all prospects in this
-responder segment</li>
-<li><code>reactivations</code>: the number of users reactivating at any point during the period (regardless
-of subsequent cancelation)</li>
-<li><code>reactivation_rate</code>: the percentage of users reactivating at any point out of all users in this
-responder segment</li>
-<li><code>total_boxes_ordered</code>: the total number of boxes ordered during the period</li>
-<li><code>avg_boxes_ordered</code>: the average number of boxes ordered during the period across all users
-in this responder segment</li>
-<li><code>gov</code>: the total gross order value of all boxes ordered during the period</li>
-<li><code>aov</code>: the average order value across all boxes ordered during the period</li>
-<li><code>desserts_ordered</code>: the total number of boxes ordered containing at least 1 dessert</li>
-<li><code>dessert_take_rate</code>: the percent of boxes ordered containing at least 1 dessert</li>
-<li><code>ordered_nth_box</code>: [<em>VALUE SHOULD BE FALSE, OR A NUMBER, OR LIST OF NUMBERS</em>] the total number
-of users ordering their nth box during the period (<code>n</code> must be specified
-in the template--for multiple values of <code>n</code>, list all separated by commas)</li>
-<li><code>redeemed_offer_discount</code>: number of users who redeemed the offer during the period</li>
-<li><code>pct_redeemed</code>: percent of users who redeemed the offer in this responder segment</li>
-<li><code>total_active_at_end</code>: total number of users still active at end of period</li>
-<li><code>pct_active_at_end</code>: percent of users still active at end of period</li>
+KPIs are cumulative--they are computed from the campaign start date to the end of the specified period.<ul>
+<li><code>cancelations</code>: the percentage of users in this responder segment canceling at any point during the period (regardless of subsequent subscription changes)</li>
+<li><code>cancelation_rate</code>: the percentage of users in this responder segment canceling at any point during the period (regardless of subsequent subscription changes)</li>
+<li><code>new_activations</code>: the number of prospects in this responder segment activating at any point during the period (regardless of subsequent subscription changes)</li>
+<li><code>activation_rate</code>: the percentage of prospects in this responder segment activating at any point during the period (regardless of subsequent subscription changes)</li>
+<li><code>reactivations</code>: the number of users in this responder segment reactivating at any point during the period (regardless of subsequent subscription changes)</li>
+<li><code>reactivation_rate</code>: the percentage of users in this responder segment reactivating at any point during the period (regardless of subsequent subscription changes)</li>
+<li><code>total_boxes_ordered</code>: the number of boxes ordered by users in this responder segment during the period</li>
+<li><code>avg_boxes_ordered</code>: the average number of boxes ordered by users in this responder segment during the period</li>
+<li><code>gov</code>: the total gross order value of all boxes ordered by users in this responder segment during the period</li>
+<li><code>aov</code>: the average order value across all boxes ordered by users in this responder segment during the period</li>
+<li><code>desserts_ordered</code>: the number of boxes ordered by users in this responder segment containing at least 1 dessert item</li>
+<li><code>dessert_take_rate</code>: the percent of boxes ordered by users in this responder segment containing at least 1 dessert item</li>
+<li><code>ordered_nth_box</code>: [<em>VALUE SHOULD BE FALSE, OR A NUMBER, OR LIST OF NUMBERS</em>] the number of users in this responder segment ordering their nth box during the period (<code>n</code> must be specified in the template--for multiple values of <code>n</code>, list all values separated by commas)</li>
+<li><code>redeemed_offer_discount</code>: number of users in this responder segment who redeemed the offer or discount before it expired</li>
+<li><code>pct_redeemed</code>: percent of users in this responder segment who redeemed the offer or discount</li>
+<li><code>total_active_at_end</code>: number of users in this responder segment with an active subscription at the end of this period</li>
+<li><code>pct_active_at_end</code>: percent of users in this responder segment with an active subscription at end of this period</li>
 </ul>
 </li>
 </ul>
-<h3>Test matrix information columns</h3>
+<h3 id="test-matrix-information-columns">Test matrix information columns</h3>
 <p>(<strong>single value per test matrix row</strong>)</p>
 <ul>
 <li><code>test_group</code>: Test or Control</li>
 <li><code>segment_group</code>: any segment label desired, or blank if not needed</li>
 <li><code>offer_group</code>: a description of the offer sent, or no offer</li>
-<li><code>target_name</code>: target name that uniquely identifies this row in the test
-matrix. Must correspond exactly to the first part of the filename for all
-send list files in the campaign</li>
-<li><code>creative_template_name</code>: name of creative template sent to users, or blank
-if no message sent</li>
+<li><code>target_name</code>: target name that uniquely identifies this row in the test matrix. Must correspond exactly to the first part of the filename for all send list files in the campaign</li>
+<li><code>creative_template_name</code>: name of creative template sent to users, or blank if no message sent</li>
 <li><code>population_name</code>: prospect/user population lists are pulled from</li>
-<li><code>offer_campaign_name</code>: value of <code>Name</code> column in Admin/Offer Campaigns (for
-offer campaigns). Blank if mass discount or no offer sent</li>
-<li><code>discount_name</code>: value of <code>Discount Name</code> column in Admin/Offer Campaigns
-(<em>for offer campaigns</em>) or value of <code>Name</code> column in Admin/Discounts (<em>for
-mass discounts</em>). Blank if no offer sent</li>
+<li><code>offer_campaign_name</code>: value of <code>Name</code> column in Admin/Offer Campaigns (for offer campaigns). Blank if mass discount or no offer sent</li>
+<li><code>discount_name</code>: value of <code>Discount Name</code> column in Admin/Offer Campaigns (<em>for offer campaigns</em>) or value of <code>Name</code> column in Admin/Discounts (<em>for mass discounts</em>). Blank if no offer sent</li>
 <li><code>message_offer</code>: message or offer description sent</li>
 </ul></body>
 </html>

@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sqlalchemy import create_engine, text, MetaData, Table
+from sqlalchemy import create_engine, text
 import logging, re, sys
 from datetime import datetime
 from argparse import ArgumentParser
@@ -88,13 +88,12 @@ def build_query(info, test_matrix):
     FROM campaign_lists a
     INNER JOIN dw.user_subscription_events use
         ON a.user_id = use.internal_user_id
-        AND {date_q} >= '{start_date}'
-        AND {date_q} <= a.end_date
+        AND DATE(convert_timezone('America/New_York',
+        subscription_changed_at))
+        BETWEEN '{start_date}' AND a.end_date
     GROUP BY 1,2
     """.format(
         change_q = ', bool_or( subscription_status_change_event',
-        date_q = """DATE(convert_timezone('America/New_York',
-        subscription_changed_at))""",
         start_date = start_date)
 
     last_change = """SELECT a.user_id
@@ -103,11 +102,10 @@ def build_query(info, test_matrix):
     FROM campaign_lists a
     INNER JOIN dw.user_subscription_events use
         ON a.user_id = use.internal_user_id
-        AND {date_q} <= a.end_date
+        AND DATE(convert_timezone('America/New_York',
+        subscription_changed_at)) <= a.end_date
     GROUP BY 1,2
-    """.format(
-        date_q = """DATE(convert_timezone('America/New_York',
-        subscription_changed_at))""")
+    """
 
     active_at_end = """SELECT a.user_id
         , a.promo_period
@@ -117,7 +115,7 @@ def build_query(info, test_matrix):
     INNER JOIN dw.user_subscription_events use
         ON a.user_id = use.internal_user_id
         AND last_change = subscription_changed_at
-        """
+    """
 
     if info.ordered_nth_box:
         boxes = [int(i) for i in info.ordered_nth_box.split(', ')]
@@ -140,16 +138,43 @@ def build_query(info, test_matrix):
     FROM campaign_lists a
     INNER JOIN dw.menu_order_boxes bo
         ON bo.internal_user_id = a.user_id
-        AND ship_date >= '{start_date}'
-        AND ship_date <= a.end_date
+        AND ship_date BETWEEN '{start_date}' AND a.end_date
         AND status <> 'canceled'
     GROUP BY 1,2
     """.format(
         box_measures_joined = '\n\t'.join(box_measures),
         start_date = start_date)
 
+    upgrade_events_raw = """SELECT a.user_id
+        , a.promo_period
+        , CAST(json_extract_path_text(properties,
+            'new_plan_dinners') AS INT) *
+          CAST(json_extract_path_text(properties,
+            'new_plan_servings') AS INT) AS new_plan_plates
+        , CAST(json_extract_path_text(properties,
+            'old_plan_dinners') AS INT) *
+          CAST(json_extract_path_text(properties,
+            'old_plan_servings') AS INT) AS old_plan_plates
+    FROM campaign_lists a
+    INNER JOIN dw.web_track_events wte
+        ON wte.user_id = a.user_id
+        AND wte.event = 'Subscription Plan Changed'
+        AND DATE(convert_timezone('America/New_York',
+        client_timestamp))
+        BETWEEN '{start_date}' AND a.end_date
+    """.format(start_date = start_date)
+
+    upgrade_events = """SELECT a.user_id
+        , a.promo_period
+        , bool_or(new_plan_plates > old_plan_plates) AS upgraded
+        , bool_or(new_plan_plates < old_plan_plates) AS downgraded
+    FROM upgrade_events_raw a
+    WHERE new_plan_plates <> old_plan_plates
+    GROUP BY 1,2
+    """
+
     boolean_metrics = ['active_at_end', 'canceled', 'activated',
-        'reactivated'] + box_measure_cols
+        'reactivated', 'upgraded', 'downgraded'] + box_measure_cols
     numeric_metrics = ['total_boxes_ordered', 'gov', 'desserts_ordered']
 
     boolean_metrics_q = [', COALESCE({a}, false) AS {a}'.format(a = x)
@@ -159,7 +184,8 @@ def build_query(info, test_matrix):
 
     joins = [('subscription_changes', 'sc'),
         ('active_at_end', 'ae'),
-        ('boxes_ordered', 'bo')]
+        ('boxes_ordered', 'bo'),
+        ('upgrade_events', 'ue')]
     join_q = ["""LEFT JOIN {tbl_name} {a}
         ON {a}.user_id = a.user_id
         AND {a}.promo_period = a.promo_period""".format(
@@ -220,6 +246,10 @@ def build_query(info, test_matrix):
         {}),
         boxes_ordered AS (
         {}),
+        upgrade_events_raw AS (
+        {}),
+        upgrade_events AS (
+        {}),
         individual_metrics AS (
         {}),
         responder_metric AS (
@@ -230,73 +260,20 @@ def build_query(info, test_matrix):
             last_change,
             active_at_end,
             boxes_ordered,
+            upgrade_events_raw,
+            upgrade_events,
             individual_metrics,
             responder_metric,
             aggregates)
-
     return compose_full_query
-
-
-def update_campaign_table(engine, tbl_name, columns):
-
-    if 'internal_user_id' in columns:
-        rename_query = """ALTER TABLE analytics.{}
-        RENAME COLUMN internal_user_id to user_id
-        """.format(tbl_name)
-        with engine.begin() as connection:
-            connection.execute(rename_query)
-        logging.info('Replaced internal_user_id column with user_id')
-
-    elif 'prospect_id' in columns:
-        join_query = """SELECT a.*,
-            u.internal_user_id AS user_id
-        FROM analytics.{} a
-        LEFT JOIN dw.users u
-        ON u.internal_marketing_prospect_id = a.prospect_id
-        """.format(tbl_name)
-
-        data = pd.read_sql_query(text(join_query), engine)
-        data.to_sql(tbl_name, con = engine,
-            schema = 'analytics', if_exists = 'replace', index = False)
-        logging.info('Joined on internal_marketing_prospect_id and added user_id')
-
-    elif 'external_id' in columns:
-        join_query = """SELECT a.*,
-            u.internal_user_id AS user_id
-        FROM analytics.{} a
-        LEFT JOIN dw.users u
-        ON u.external_id = a.external_id
-        """.format(tbl_name)
-
-        data = pd.read_sql_query(text(join_query), engine)
-        data.to_sql(tbl_name, con = engine,
-            schema = 'analytics', if_exists = 'replace', index = False)
-        logging.info('Joined on external_id and added user_id')
-
-    elif 'email' in columns:
-        join_query = """SELECT a.*,
-            u.internal_user_id AS user_id
-        FROM analytics.{} a
-        LEFT JOIN dw.users u
-        ON u.email = a.email
-        """.format(tbl_name)
-
-        data = pd.read_sql_query(text(join_query), engine)
-        data.to_sql(tbl_name, con = engine,
-            schema = 'analytics', if_exists = 'replace', index = False)
-        logging.info('Joined on registered user email and added user_id')
-
-    else:
-        logging.error('Could not find any id column in {}: {}'.format(
-            table_name, '\n'.join(
-                ['user_id', 'internal_user_id', 'prospect_id',
-                'external_id', 'email'])))
 
 
 def compute_and_output_metrics(data, info, path, tm_cols):
     data = data.rename(columns = {'canceled': 'cancelations',
         'activated': 'new_activations', 'reactivated': 'reactivations',
         'active_at_end': 'total_active_at_end',
+        'upgraded': 'total_upgrades',
+        'downgraded': 'total_downgrades',
         'offer_redeemed': 'redeemed_offer_discount',
         'total_segment_size': 'segment_responder_size'})
 
@@ -385,7 +362,7 @@ def compute_and_output_metrics(data, info, path, tm_cols):
     data_wide = data_wide.rename_axis(
         ['target name', 'responder ({})'.format(info.responder_action)])
     data_wide = data_wide.rename(columns = lambda x: x.replace('_', ' '))
-    data_wide.to_csv(path, index = True)
+    data_wide.sort_index().to_csv(path, index = True)
 
 
 def main(args):
@@ -393,7 +370,15 @@ def main(args):
         level=logging.INFO,
         format = '{asctime} {name:12s} {levelname:8s} {message}',
         datefmt = '%m-%d %H:%M:%S',
-        style = '{' )
+        style = '{',
+        stream=sys.stdout)
+
+    err = logging.StreamHandler(sys.stderr)
+    err.setLevel(logging.ERROR)
+    out = logging.StreamHandler(sys.stdout)
+    out.setLevel(logging.INFO)
+    logging.getLogger(__name__).addHandler(out)
+    logging.getLogger(__name__).addHandler(err)
 
     [logging.info('Input argument {} set to {}'.format(k, v))
         for k,v in vars(args).items()]
@@ -402,6 +387,8 @@ def main(args):
     query = build_query(campaign_info, test_matrix)
     with open(str(Path(campaign_dir, 'generated_query.sql')), 'w') as f:
         f.write(query)
+    logging.info('Query generated and written to disk at {}'.format(
+        str(Path(campaign_dir, 'generated_query.sql'))))
 
     engine = create_engine("{driver}://{host}:{port}/{dbname}".format(
           driver = "postgresql+psycopg2",
@@ -411,12 +398,9 @@ def main(args):
 
     tbl_name = campaign_info.campaign_short_name.strip().lower()
     if not engine.has_table(tbl_name, schema = 'analytics'):
-        logging.error('table `analytics.{}` not found'.format(tbl_name))
-
-    campaign_lists = Table(tbl_name,
-        MetaData(), schema = 'analytics', autoload_with = engine)
-    if 'user_id' not in campaign_lists.columns:
-        update_campaign_table(engine, tbl_name, campaign_lists.columns)
+        logging.error('Table `analytics.{}` not found'.format(tbl_name))
+    else:
+        logging.info('Table `analytics.{}` found successfully'.format(tbl_name))
 
     data = pd.read_sql_query(text(query), engine,
         parse_dates = ['start_date', 'end_date'])

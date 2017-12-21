@@ -572,8 +572,8 @@ pre.editor-colors .fold-marker:after {
 }
 </style>
   </head>
-  <body class='markdown-preview' data-use-github-style><h1 id="campaign-reporting-automation">Campaign Reporting Automation</h1>
-<h2 id="campaign-lists">Campaign lists</h2>
+  <body class='markdown-preview' data-use-github-style><h1>Campaign Reporting Automation</h1>
+<h2>Campaign lists</h2>
 <p>There should be a folder for each campaign, named with the campaign name.
 This folder should contain an Excel file (ending in <code>template.xlsx</code>),
 a <code>Test</code> subfolder, and a <code>Control</code> subfolder. All lists in the <code>Test</code> and
@@ -598,7 +598,7 @@ should correspond to one and only one row of the test matrix for that campaign.<
 <li><code>.csv</code> format (with comma-separation, not tab separation)</li>
 <li><code>.xls/.xlsx</code> format</li>
 </ul>
-<h3 id="campaign-list-columns">Campaign list columns</h3>
+<h3>Campaign list columns</h3>
 <p>The campaign lists must feature at least one of the following <code>user_identifier</code> columns:</p>
 <ul>
 <li><code>user_id</code></li>
@@ -609,13 +609,13 @@ should correspond to one and only one row of the test matrix for that campaign.<
 </ul>
 <p>Additional columns can be included in the campaign lists but will be ignored.
 All campaign lists for the same campaign should feature the same user identifier.</p>
-<h2 id="campaign-template">Campaign template</h2>
+<h2>Campaign template</h2>
 <p>Please see example campaign templates for reference. Column names should be identical for all campaigns.</p>
 <ul>
 <li>Column names highlighted in yellow should be filled out for every row in the test matrix.</li>
 <li>Column names highlighted in blue only need to be filled out for the first row.</li>
 </ul>
-<h3 id="campaign-information-columns">Campaign information columns</h3>
+<h3>Campaign information columns</h3>
 <p>(<strong>single value per campaign</strong>)</p>
 <ul>
 <li><code>campaign_name</code>: A plain English name for the campaign</li>
@@ -626,6 +626,8 @@ All campaign lists for the same campaign should feature the same user identifier
 <li><code>ordered_{1st/2nd/3rd/nth}_box</code> for any number n indicating the user has received that number of boxes since joining Plated</li>
 <li><code>desserts_ordered &gt;= {n}</code> for any number n indicating the user has ordered at least this many desserts during the promo period</li>
 <li><code>total_boxes_ordered &gt;= {n}</code> for any number n indicating the user has ordered at least this many boxes during the promo period</li>
+<li><code>upgraded</code></li>
+<li><code>offer_redeemed</code></li>
 </ul>
 </li>
 <li><code>start_date</code>: the start date for the campaign and promo period</li>
@@ -652,10 +654,12 @@ KPIs are cumulative--they are computed from the campaign start date to the end o
 <li><code>pct_redeemed</code>: percent of users in this responder segment who redeemed the offer or discount</li>
 <li><code>total_active_at_end</code>: number of users in this responder segment with an active subscription at the end of this period</li>
 <li><code>pct_active_at_end</code>: percent of users in this responder segment with an active subscription at end of this period</li>
+<li><code>total_upgrades</code>: the total number of users who upgraded their base plan (people, nights, or both) at any point during the period (regardless of subsequent base plan changes)</li>
+<li><code>total_downgrades</code>: the total number of users who downgraded their base plan (people, nights, or both) at any point during the period (regardless of subsequent base plan changes)</li>
 </ul>
 </li>
 </ul>
-<h3 id="test-matrix-information-columns">Test matrix information columns</h3>
+<h3>Test matrix information columns</h3>
 <p>(<strong>single value per test matrix row</strong>)</p>
 <ul>
 <li><code>test_group</code>: Test or Control</li>
@@ -667,5 +671,6 @@ KPIs are cumulative--they are computed from the campaign start date to the end o
 <li><code>offer_campaign_name</code>: value of <code>Name</code> column in Admin/Offer Campaigns (for offer campaigns). Blank if mass discount or no offer sent</li>
 <li><code>discount_name</code>: value of <code>Discount Name</code> column in Admin/Offer Campaigns (<em>for offer campaigns</em>) or value of <code>Name</code> column in Admin/Discounts (<em>for mass discounts</em>). Blank if no offer sent</li>
 <li><code>message_offer</code>: message or offer description sent</li>
-</ul></body>
+</ul>
+<h2>Reporting metrics</h2></body>
 </html>

@@ -52,6 +52,8 @@ Please see example campaign templates for reference. Column names should be iden
     - `ordered_{1st/2nd/3rd/nth}_box` for any number n indicating the user has received that number of boxes since joining Plated
     - `desserts_ordered >= {n}` for any number n indicating the user has ordered at least this many desserts during the promo period
     - `total_boxes_ordered >= {n}` for any number n indicating the user has ordered at least this many boxes during the promo period
+    - `upgraded`
+    - `offer_redeemed`
   - `start_date`: the start date for the campaign and promo period
   - `promo_period_end_date`: the end date for the promo period, or `current_date` if still ongoing
   - `post_promo_period_end_date`: the end date for the post promo period, or `current_date` if still ongoing. May be left blank if no post promo period
@@ -76,6 +78,8 @@ Please see example campaign templates for reference. Column names should be iden
     - `pct_redeemed`: percent of users in this responder segment who redeemed the offer or discount
     - `total_active_at_end`: number of users in this responder segment with an active subscription at the end of this period
     - `pct_active_at_end`: percent of users in this responder segment with an active subscription at end of this period
+    - `total_upgrades`: the total number of users who upgraded their base plan (people, nights, or both) at any point during the period (regardless of subsequent base plan changes)
+    - `total_downgrades`: the total number of users who downgraded their base plan (people, nights, or both) at any point during the period (regardless of subsequent base plan changes)
 
 ### Test matrix information columns
 (**single value per test matrix row**)

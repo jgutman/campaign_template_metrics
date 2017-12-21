@@ -1,9 +1,9 @@
 import boto3
 import pandas as pd
-import os, re, sys
+import sys
 from pathlib import Path
 from io import StringIO
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from pandas.io.sql import get_schema
 import logging
 from argparse import ArgumentParser
@@ -120,12 +120,92 @@ def extract_campaign_info(args):
     return campaign_dir, template[test_matrix_cols], campaign_info
 
 
+def replace_table(data, engine, tbl_name, args, usernames,
+        campaign_info):
+    drop_table = "DROP TABLE analytics.{}".format(tbl_name)
+    with engine.begin() as connection:
+        connection.execute(drop_table)
+    logging.info('Table analytics.{} dropped'.format(tbl_name))
+
+    s3_path, tbl_name = upload_to_s3(data, args.bucket,
+        args.s3dir, info = campaign_info)
+    upload_to_redshift(args.bucket, s3_path,
+        tbl_name = tbl_name, engine = engine,
+        data = data, usernames = usernames)
+    logging.info('Table analytics.{} replaced'.format(tbl_name))
+
+
+def update_campaign_table(engine, tbl_name, columns,
+        args, usernames, campaign_info):
+
+    if 'internal_user_id' in columns:
+        rename_query = """ALTER TABLE analytics.{}
+        RENAME COLUMN internal_user_id to user_id
+        """.format(tbl_name)
+        with engine.begin() as connection:
+            connection.execute(rename_query)
+        logging.info('Replaced internal_user_id column with user_id')
+
+    elif 'prospect_id' in columns:
+        join_query = """SELECT a.*,
+            u.internal_user_id AS user_id
+        FROM analytics.{} a
+        LEFT JOIN dw.users u
+        ON u.internal_marketing_prospect_id = a.prospect_id
+        """.format(tbl_name)
+
+        data = pd.read_sql_query(text(join_query), engine)
+        replace_table(data, engine, tbl_name, args, usernames,
+                campaign_info)
+        logging.info('Joined on internal_marketing_prospect_id and added user_id')
+
+    elif 'external_id' in columns:
+        join_query = """SELECT a.*,
+            u.internal_user_id AS user_id
+        FROM analytics.{} a
+        LEFT JOIN dw.users u
+        ON u.external_id = a.external_id
+        """.format(tbl_name)
+
+        data = pd.read_sql_query(text(join_query), engine)
+        replace_table(data, engine, tbl_name, args, usernames,
+                campaign_info)
+        logging.info('Joined on external_id and added user_id')
+
+    elif 'email' in columns:
+        join_query = """SELECT a.*,
+            u.internal_user_id AS user_id
+        FROM analytics.{} a
+        LEFT JOIN dw.users u
+        ON u.email = a.email
+        """.format(tbl_name)
+
+        data = pd.read_sql_query(text(join_query), engine)
+        replace_table(data, engine, tbl_name, args, usernames,
+                campaign_info)
+        logging.info('Joined on registered user email and added user_id')
+
+    else:
+        logging.error('Could not find any id column in {}: {}'.format(
+            table_name, '\n'.join(
+                ['user_id', 'internal_user_id', 'prospect_id',
+                'external_id', 'email'])))
+
+
 def main(args):
     logging.basicConfig(
         level=logging.INFO,
         format = '{asctime} {name:12s} {levelname:8s} {message}',
         datefmt = '%m-%d %H:%M:%S',
-        style = '{' )
+        style = '{',
+        stream=sys.stdout)
+
+    err = logging.StreamHandler(sys.stderr)
+    err.setLevel(logging.ERROR)
+    out = logging.StreamHandler(sys.stdout)
+    out.setLevel(logging.INFO)
+    logging.getLogger(__name__).addHandler(out)
+    logging.getLogger(__name__).addHandler(err)
 
     [logging.info('Input argument {} set to {}'.format(k, v))
         for k,v in vars(args).items()]
@@ -148,6 +228,13 @@ def main(args):
     # copy data from S3 to new table in Redshift
     upload_to_redshift(args.bucket, s3_path, tbl_name = tbl_name,
         engine = engine, data = data, usernames = usernames)
+
+    if 'user_id' not in data.columns:
+        update_campaign_table(engine, tbl_name, data.columns,
+            args, usernames, campaign_info)
+    else:
+        logging.info('User_id column found as primary identifier')
+
     logging.info('Database upload completed successfully for {}'.format(
         args.campaign_dir))
 

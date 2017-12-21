@@ -1,0 +1,27 @@
+12-20 12:49:54 root         INFO     Input argument bucket set to plated-redshift-etl
+12-20 12:49:54 root         INFO     Input argument s3dir set to manual/campaigns_jackie
+12-20 12:49:54 root         INFO     Input argument campaign_dir set to New Customer Phased Offer Email
+12-20 12:49:54 root         INFO     Input argument root_dir set to /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists
+12-20 12:49:54 root         INFO     13 files found
+12-20 12:49:54 root         INFO     /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/Send Lists/Test/Third-box customers (3- and 4-servings) [4 servings].csv successfully processed
+12-20 12:49:54 root         INFO     /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/Send Lists/Test/Second-box customers (3- and 4-servings) [3 servings].csv successfully processed
+12-20 12:49:54 root         INFO     /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/Send Lists/Test/Third-box customers (2-servings).csv successfully processed
+12-20 12:49:54 root         INFO     /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/Send Lists/Test/First-box customers (3- and 4- servings) [4 servings].csv successfully processed
+12-20 12:49:54 root         INFO     /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/Send Lists/Control/Third-box customers (all servings).csv successfully processed
+12-20 12:49:54 root         INFO     /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/Send Lists/Control/First-box customers (all servings).csv successfully processed
+12-20 12:49:54 root         INFO     /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/Send Lists/Test/Second-box customers (3- and 4-servings) [4 servings].csv successfully processed
+12-20 12:49:54 root         INFO     /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/Send Lists/Test/Second-box customers (2-servings).csv successfully processed
+12-20 12:49:54 root         INFO     /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/Send Lists/Test/First-box customers (3- and 4- servings) [3 servings].csv successfully processed
+12-20 12:49:54 root         INFO     /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/Send Lists/Test/First-box customers (2-servings).csv successfully processed
+12-20 12:49:54 root         INFO     /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/Send Lists/Control/Second-box customers (all servings).csv successfully processed
+12-20 12:49:54 root         INFO     /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/Send Lists/Test/Third-box customers (3- and 4-servings) [3 servings].csv successfully processed
+12-20 12:49:54 root         INFO     Dataframe created from 13 files with 9990 records in 11 columns
+12-20 12:49:54 botocore.credentials INFO     Found credentials in shared credentials file: ~/.aws/credentials
+12-20 12:49:54 root         INFO     S3ReadWrite created in (folder: manual/campaigns_jackie, bucket: plated-redshift-etl)
+12-20 12:49:54 botocore.vendored.requests.packages.urllib3.connectionpool INFO     Starting new HTTPS connection (1): s3.amazonaws.com
+12-20 12:49:55 root         INFO     data saved in S3 bucket at manual/campaigns_jackie/New Customer Phased Offer Email/new_customer_phased_offer.csv
+12-20 12:49:58 root         INFO     Created empty table analytics.new_customer_phased_offer
+12-20 12:50:01 root         INFO     Data copied from s3://plated-redshift-etl/manual/campaigns_jackie/New Customer Phased Offer Email/new_customer_phased_offer.csv to analytics.new_customer_phased_offer
+12-20 12:50:02 root         INFO     SELECT privileges granted to production_read_only ,analytics_team
+12-20 12:50:04 root         INFO     User_id column found as primary identifier
+12-20 12:50:04 root         INFO     Database upload completed successfully for New Customer Phased Offer Email

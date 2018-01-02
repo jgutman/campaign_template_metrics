@@ -1,0 +1,5 @@
+12-21 11:38:40 root         INFO     Input argument campaign_dir set to Destination Dinner Reactivation
+12-21 11:38:40 root         INFO     Input argument root_dir set to /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists
+12-21 11:38:41 root         INFO     Query generated and written to disk at /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/Destination Dinner Reactivation/generated_query.sql
+12-21 11:38:44 root         INFO     Table `analytics.dest_dinner_lapsed` found successfully
+12-21 11:39:26 root         INFO     Aggregate data pulled successfully from analytics.dest_dinner_lapsed

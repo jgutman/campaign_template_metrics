@@ -12,8 +12,9 @@ from s3_read_write import S3ReadWrite
 
 def process_send_lists(campaign_dir, test_matrix):
     # Search recursively for all files ending in *.csv, *.xls, *.xlsx
-    all_files = [str(file) for file in list(campaign_dir.glob('**/*.csv')) +
-                            list(campaign_dir.glob('**/*.xlsx?'))]
+    all_files = [str(file) for file in
+        list(campaign_dir.glob('**/Send Lists/**/*.csv')) +
+        list(campaign_dir.glob('**/Send Lists/**/*.xlsx?'))]
     logging.info('{} files found'.format(len(all_files)))
 
     targets_by_file = {str(f): target_name
@@ -135,10 +136,14 @@ def replace_table(data, engine, tbl_name, args, usernames,
     logging.info('Table analytics.{} replaced'.format(tbl_name))
 
 
-def update_campaign_table(engine, tbl_name, columns,
+def update_campaign_table(engine, tbl_name, data,
         args, usernames, campaign_info):
+    if ('user_id' in data.columns and
+            data.user_id.notnull().all()):
+        logging.info('User_id column found as primary identifier')
 
-    if 'internal_user_id' in columns:
+    elif ('internal_user_id' in data.columns and
+            data.internal_user_id.notnull().all()):
         rename_query = """ALTER TABLE analytics.{}
         RENAME COLUMN internal_user_id to user_id
         """.format(tbl_name)
@@ -146,7 +151,8 @@ def update_campaign_table(engine, tbl_name, columns,
             connection.execute(rename_query)
         logging.info('Replaced internal_user_id column with user_id')
 
-    elif 'prospect_id' in columns:
+    elif ('prospect_id' in data.columns and
+            data.prospect_id.notnull().all()):
         join_query = """SELECT a.*,
             u.internal_user_id AS user_id
         FROM analytics.{} a
@@ -159,7 +165,8 @@ def update_campaign_table(engine, tbl_name, columns,
                 campaign_info)
         logging.info('Joined on internal_marketing_prospect_id and added user_id')
 
-    elif 'external_id' in columns:
+    elif ('external_id' in data.columns and
+            data.external_id.notnull().all()):
         join_query = """SELECT a.*,
             u.internal_user_id AS user_id
         FROM analytics.{} a
@@ -172,7 +179,8 @@ def update_campaign_table(engine, tbl_name, columns,
                 campaign_info)
         logging.info('Joined on external_id and added user_id')
 
-    elif 'email' in columns:
+    elif ('email' in data.columns and
+            data.email.notnull().all()):
         join_query = """SELECT a.*,
             u.internal_user_id AS user_id
         FROM analytics.{} a
@@ -186,10 +194,9 @@ def update_campaign_table(engine, tbl_name, columns,
         logging.info('Joined on registered user email and added user_id')
 
     else:
-        logging.error('Could not find any id column in {}: {}'.format(
-            table_name, '\n'.join(
-                ['user_id', 'internal_user_id', 'prospect_id',
-                'external_id', 'email'])))
+        logging.error('Could not find non-null id column in {}: {}'.format(
+            tbl_name, ' '.join(['user_id', 'internal_user_id',
+            'prospect_id', 'external_id', 'email'])))
 
 
 def main(args):
@@ -229,11 +236,8 @@ def main(args):
     upload_to_redshift(args.bucket, s3_path, tbl_name = tbl_name,
         engine = engine, data = data, usernames = usernames)
 
-    if 'user_id' not in data.columns:
-        update_campaign_table(engine, tbl_name, data.columns,
+    update_campaign_table(engine, tbl_name, data,
             args, usernames, campaign_info)
-    else:
-        logging.info('User_id column found as primary identifier')
 
     logging.info('Database upload completed successfully for {}'.format(
         args.campaign_dir))

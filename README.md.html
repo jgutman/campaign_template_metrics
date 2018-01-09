@@ -623,11 +623,13 @@ All campaign lists for the same campaign should feature the same user identifier
 <li><code>responder_action</code>: The defining action that differentiates responders from non-responders. The action must be taken during the promo period. May be one of the following values:<ul>
 <li><code>reactivated</code></li>
 <li><code>activated</code></li>
-<li><code>ordered_{1st/2nd/3rd/nth}_box</code> for any number n indicating the user has received that number of boxes since joining Plated</li>
+<li><code>ordered_{1st/2nd/3rd/nth}_box</code> for any number n indicating the user has received their nth order during the promo period</li>
 <li><code>desserts_ordered &gt;= {n}</code> for any number n indicating the user has ordered at least this many desserts during the promo period</li>
 <li><code>total_boxes_ordered &gt;= {n}</code> for any number n indicating the user has ordered at least this many boxes during the promo period</li>
 <li><code>upgraded</code></li>
 <li><code>offer_redeemed</code></li>
+<li><code>ordered_ds_{n}</code> ordered a box during the delivery schedule named n during the promo period</li>
+<li><code>gift_card_purchase</code></li>
 </ul>
 </li>
 <li><code>start_date</code>: the start date for the campaign and promo period</li>
@@ -656,6 +658,7 @@ KPIs are cumulative--they are computed from the campaign start date to the end o
 <li><code>pct_active_at_end</code>: percent of users in this responder segment with an active subscription at end of this period</li>
 <li><code>total_upgrades</code>: the total number of users who upgraded their base plan (people, nights, or both) at any point during the period (regardless of subsequent base plan changes)</li>
 <li><code>total_downgrades</code>: the total number of users who downgraded their base plan (people, nights, or both) at any point during the period (regardless of subsequent base plan changes)</li>
+<li><code>ordered_ds</code>: [<em>VALUE SHOULD BE FALSE, OR THE NAME OF A DS</em>] the number of users in this responder segment ordering a box during the specified delivery schedule (delivery schedule must fall within the given period)</li>
 </ul>
 </li>
 </ul>

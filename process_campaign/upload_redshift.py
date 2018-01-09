@@ -27,7 +27,7 @@ def process_send_lists(campaign_dir, test_matrix):
     data = data.merge(test_matrix, on = 'target_name')
     logging.info("Dataframe created from {n_files} files " \
                  "with {n_records} records in {n_cols} columns".format(
-                 n_files = len(all_files),
+                 n_files = len(targets_by_file.keys()),
                  n_records = data.shape[0],
                  n_cols = data.shape[1]))
     return data

@@ -128,21 +128,31 @@ def build_query(info, test_matrix):
     else:
         box_measures = box_measure_cols = []
 
+    if info.ordered_ds:
+        ds_measure_col = ['ordered_ds_{}'.format(int(info.ordered_ds))]
+        ds_ordered = """, bool_or(delivery_schedule_name = '{ds}')
+            AS ordered_ds_{ds}""".format(ds = int(info.ordered_ds))
+    else:
+        ds_ordered = ""
+        ds_measure_col = []
+
     boxes_ordered = """SELECT a.user_id
         , a.promo_period
         , COUNT( DISTINCT delivery_schedule_name ) AS total_boxes_ordered
         {box_measures_joined}
+        {ds_ordered}
         , SUM(gov) AS gov
         , SUM( CASE WHEN dessert_plates > 0 THEN 1 END )
             AS desserts_ordered
     FROM campaign_lists a
     INNER JOIN dw.menu_order_boxes bo
         ON bo.internal_user_id = a.user_id
-        AND ship_date BETWEEN '{start_date}' AND a.end_date
+        AND delivery_date BETWEEN '{start_date}' AND a.end_date
         AND status <> 'canceled'
     GROUP BY 1,2
     """.format(
         box_measures_joined = '\n\t'.join(box_measures),
+        ds_ordered = ds_ordered,
         start_date = start_date)
 
     upgrade_events_raw = """SELECT a.user_id
@@ -173,8 +183,20 @@ def build_query(info, test_matrix):
     GROUP BY 1,2
     """
 
+    gift_card_orders = """SELECT a.user_id
+        , a.promo_period
+        , TRUE as gift_card_purchase
+    FROM campaign_lists a
+    INNER JOIN dw.gift_card_orders gco
+        ON gco.sender_internal_user_id = a.user_id
+        AND DATE(convert_timezone('America/New_York',
+            gift_card_order_placed_at))
+        BETWEEN '{start_date}' AND a.end_date
+    """.format(start_date = start_date)
+
     boolean_metrics = ['active_at_end', 'canceled', 'activated',
-        'reactivated', 'upgraded', 'downgraded'] + box_measure_cols
+        'reactivated', 'upgraded', 'downgraded', 'gift_card_purchase'] + \
+        box_measure_cols + ds_measure_col
     numeric_metrics = ['total_boxes_ordered', 'gov', 'desserts_ordered']
 
     boolean_metrics_q = [', COALESCE({a}, false) AS {a}'.format(a = x)
@@ -185,7 +207,8 @@ def build_query(info, test_matrix):
     joins = [('subscription_changes', 'sc'),
         ('active_at_end', 'ae'),
         ('boxes_ordered', 'bo'),
-        ('upgrade_events', 'ue')]
+        ('upgrade_events', 'ue'),
+        ('gift_card_orders', 'gc')]
     join_q = ["""LEFT JOIN {tbl_name} {a}
         ON {a}.user_id = a.user_id
         AND {a}.promo_period = a.promo_period""".format(
@@ -250,6 +273,8 @@ def build_query(info, test_matrix):
         {}),
         upgrade_events AS (
         {}),
+        gift_card_orders AS (
+        {}),
         individual_metrics AS (
         {}),
         responder_metric AS (
@@ -262,6 +287,7 @@ def build_query(info, test_matrix):
             boxes_ordered,
             upgrade_events_raw,
             upgrade_events,
+            gift_card_orders,
             individual_metrics,
             responder_metric,
             aggregates)
@@ -278,10 +304,23 @@ def compute_and_output_metrics(data, info, path, tm_cols):
         'total_segment_size': 'segment_responder_size'})
 
     id_cols = ['target_name', 'responder']
+
+    totals = data[id_cols + ['segment_responder_size']].groupby('target_name')
+    response_rates = {target: data.loc[data.responder == True,
+        'segment_responder_size'] / data.segment_responder_size.sum()
+        for target, data in totals}
+    response_rates = pd.Series({target: v.iloc[0]
+        if len(v) else 0 for target, v in response_rates.items()},
+        name = 'response_rate')
+    data = data.join(response_rates, on = 'target_name')
+    data['response_rate'] = ["{:.2%}".format(k)
+        for k in data.response_rate]
+
     unpivot_cols = [x for x in tm_cols if x != 'target_name']
-    unpivot_cols.append('segment_responder_size')
+    unpivot_cols.extend(['segment_responder_size', 'response_rate'])
     tm_data = data[id_cols + unpivot_cols].drop_duplicates()
     tm_data = tm_data.set_index(id_cols)
+
 
     data['date_range'] = ['{} - {}'.format(i.start_date.strftime('%m/%d'),
         i.end_date.strftime('%m/%d'))
@@ -293,7 +332,7 @@ def compute_and_output_metrics(data, info, path, tm_cols):
     if 'ordered_nth_box' in metrics:
         boxes_ordered = [re.match(r'ordered_\d{1,}[a-z]{2}_box', col)
             for col in data.columns]
-        boxes_ordered = [x.group(0) for x in boxes_ordered if x]
+        boxes_ordered = [x.group() for x in boxes_ordered if x]
         metrics.remove('ordered_nth_box')
         metrics.extend(boxes_ordered)
 
@@ -342,6 +381,13 @@ def compute_and_output_metrics(data, info, path, tm_cols):
             if np.isfinite(k) else ''
             for k in data.total_active_at_end/data.segment_responder_size]
 
+    if 'ordered_ds' in metrics:
+        ds_ordered = [re.match(r'ordered_ds_\d{4,}', col)
+            for col in data.columns]
+        ds_ordered = [x.group() for x in ds_ordered if x]
+        metrics.remove('ordered_ds')
+        metrics.extend(ds_ordered)
+
     data = data[id_cols + ['promo_period'] + metrics]
     pivot = data.pivot_table(index = id_cols,
         columns = 'promo_period', aggfunc = lambda x: x)
@@ -359,6 +405,7 @@ def compute_and_output_metrics(data, info, path, tm_cols):
         for i in data_wide.index.levels[1]]
     data_wide.index = data_wide.index.set_levels(
         responders, level = 'responder')
+    data_wide['response_rate']
     data_wide = data_wide.rename_axis(
         ['target name', 'responder ({})'.format(info.responder_action)])
     data_wide = data_wide.rename(columns = lambda x: x.replace('_', ' '))

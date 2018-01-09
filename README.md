@@ -49,11 +49,13 @@ Please see example campaign templates for reference. Column names should be iden
   - `responder_action`: The defining action that differentiates responders from non-responders. The action must be taken during the promo period. May be one of the following values:
     - `reactivated`
     - `activated`
-    - `ordered_{1st/2nd/3rd/nth}_box` for any number n indicating the user has received that number of boxes since joining Plated
+    - `ordered_{1st/2nd/3rd/nth}_box` for any number n indicating the user has received their nth order during the promo period
     - `desserts_ordered >= {n}` for any number n indicating the user has ordered at least this many desserts during the promo period
     - `total_boxes_ordered >= {n}` for any number n indicating the user has ordered at least this many boxes during the promo period
     - `upgraded`
     - `offer_redeemed`
+    - `ordered_ds_{n}` ordered a box during the delivery schedule named n during the promo period
+    - `gift_card_purchase`
   - `start_date`: the start date for the campaign and promo period
   - `promo_period_end_date`: the end date for the promo period, or `current_date` if still ongoing
   - `post_promo_period_end_date`: the end date for the post promo period, or `current_date` if still ongoing. May be left blank if no post promo period
@@ -80,6 +82,7 @@ Please see example campaign templates for reference. Column names should be iden
     - `pct_active_at_end`: percent of users in this responder segment with an active subscription at end of this period
     - `total_upgrades`: the total number of users who upgraded their base plan (people, nights, or both) at any point during the period (regardless of subsequent base plan changes)
     - `total_downgrades`: the total number of users who downgraded their base plan (people, nights, or both) at any point during the period (regardless of subsequent base plan changes)
+    - `ordered_ds`: [*VALUE SHOULD BE FALSE, OR THE NAME OF A DS*] the number of users in this responder segment ordering a box during the specified delivery schedule (delivery schedule must fall within the given period)
 
 ### Test matrix information columns
 (**single value per test matrix row**)

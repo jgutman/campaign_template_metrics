@@ -1,5 +1,0 @@
-12-21 11:10:57 root         INFO     Input argument root_dir set to /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists
-12-21 11:10:57 root         INFO     Input argument campaign_dir set to New Customer Phased Offer Email
-12-21 11:10:57 root         INFO     Query generated and written to disk at /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/New Customer Phased Offer Email/generated_query.sql
-12-21 11:11:01 root         INFO     Table `analytics.new_customer_phased_offer` found successfully
-12-21 11:11:40 root         INFO     Aggregate data pulled successfully from analytics.new_customer_phased_offer

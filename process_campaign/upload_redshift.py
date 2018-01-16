@@ -112,6 +112,7 @@ def extract_campaign_info(args):
     campaign_dir = Path(args.root_dir, args.campaign_dir).absolute()
     template_path =  [str(x) for x in campaign_dir.glob('**/*_template.xlsx')][0]
     template = pd.read_excel(template_path)
+    logging.info('Campaign template read from {}'.format(template_path))
 
     test_matrix_cols = ['test_group', 'segment_group', 'offer_group',
         'target_name', 'creative_template_name', 'population_name',

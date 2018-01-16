@@ -1,10 +1,8 @@
 #!/bin/bash
 
 declare -a campaigns=(
-    "Destination Dinner New Customer Offer"
-    "Destination Dinner Reactivation"
-    "July Reactivation Email + DM"
-    "New Customer Phased Offer Email"
+    "Unskip 1752"
+    "Unskip 1801"
 )
 declare today=`date +%m_%d_%y`
 

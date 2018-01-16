@@ -1,0 +1,5 @@
+01-10 16:50:52 root         INFO     Input argument campaign_dir set to Unskip 1801
+01-10 16:50:52 root         INFO     Input argument root_dir set to /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists
+01-10 16:50:53 root         INFO     Query generated and written to disk at /Users/jacqueline.gutman/Google Drive File Stream/My Drive/Reformatted Prioritized Campaign Lists/Unskip 1801/generated_query.sql
+01-10 16:50:57 root         INFO     Table `analytics.unskip_1801_offer_campaign` found successfully
+01-10 16:52:13 root         INFO     Aggregate data pulled successfully from analytics.unskip_1801_offer_campaign

@@ -620,25 +620,32 @@ All campaign lists for the same campaign should feature the same user identifier
 <ul>
 <li><code>campaign_name</code>: A plain English name for the campaign</li>
 <li><code>campaign_short_name</code>: A code-friendly name for the campaign. All lowercase, no spaces or special characters except underscores. May include a number but not as the first letter</li>
-<li><code>responder_action</code>: The defining action that differentiates responders from non-responders. The action must be taken during the promo period. May be one of the following values:<ul>
+<li><p><code>responder_action</code>: The defining action that differentiates responders from non-responders. The action must be taken during the promo period. May be one of the following values:</p>
+<ul>
 <li><code>reactivated</code></li>
 <li><code>activated</code></li>
-<li><code>ordered_{1st/2nd/3rd/nth}_box</code> for any number n indicating the user has received their nth order during the promo period</li>
-<li><code>desserts_ordered &gt;= {n}</code> for any number n indicating the user has ordered at least this many desserts during the promo period</li>
-<li><code>total_boxes_ordered &gt;= {n}</code> for any number n indicating the user has ordered at least this many boxes during the promo period</li>
-<li><code>upgraded</code></li>
+<li><code>ordered_{1st/2nd/3rd/nth}_box</code> for any number <em>n</em> indicating the user has received their nth order during the promo period</li>
+<li><code>desserts_ordered &gt;= {n}</code> for any number <em>n</em> indicating the user has ordered at least this many desserts during the promo period</li>
+<li><code>total_boxes_ordered &gt;= {n}</code> for any number <em>n</em> indicating the user has ordered at least this many boxes during the promo period</li>
+<li><code>upgraded</code> increased the number of nights, number of servings, or both in their base subscription plan</li>
 <li><code>offer_redeemed</code></li>
-<li><code>ordered_ds_{n}</code> ordered a box during the delivery schedule named n during the promo period</li>
+<li><code>ordered_ds_{n}</code> ordered a box during the delivery schedule named <em>n</em> during the promo period</li>
 <li><code>gift_card_purchase</code></li>
+<li><code>ordered_week_4</code> ordered a box during the 4th week of their subscription (from 1st delivery)</li>
+<li><code>num_boxes_first_4_weeks &gt;= {}</code> for any number <em>n</em> indicating the user has ordered at least this many boxes during the first four weeks of their subscription (from 1st delivery)</li>
+<li><code>used_the_app</code> used the iOS or Android app at least once during the promo period</li>
 </ul>
 </li>
-<li><code>start_date</code>: the start date for the campaign and promo period</li>
+<li><p><code>start_date</code>: the start date for the campaign and promo period</p>
+</li>
 <li><code>promo_period_end_date</code>: the end date for the promo period, or <code>current_date</code> if still ongoing</li>
 <li><code>post_promo_period_end_date</code>: the end date for the post promo period, or <code>current_date</code> if still ongoing. May be left blank if no post promo period</li>
-<li><code>long_term_end_date</code>: the end date for the long term read period, or <code>current_date</code> if still ongoing. May be left blank if no long term read period</li>
-<li><strong>Campaign KPIs:</strong> <code>TRUE</code> if the KPI is desired and relevant to the campaign,
+<li><p><code>long_term_end_date</code>: the end date for the long term read period, or <code>current_date</code> if still ongoing. May be left blank if no long term read period</p>
+</li>
+<li><p><strong>Campaign KPIs:</strong> <code>TRUE</code> if the KPI is desired and relevant to the campaign,
 <code>FALSE</code> if it can be omitted from the reporting.
-KPIs are cumulative--they are computed from the campaign start date to the end of the specified period.<ul>
+KPIs are cumulative--they are computed from the campaign start date to the end of the specified period.</p>
+<ul>
 <li><code>cancelations</code>: the percentage of users in this responder segment canceling at any point during the period (regardless of subsequent subscription changes)</li>
 <li><code>cancelation_rate</code>: the percentage of users in this responder segment canceling at any point during the period (regardless of subsequent subscription changes)</li>
 <li><code>new_activations</code>: the number of prospects in this responder segment activating at any point during the period (regardless of subsequent subscription changes)</li>
@@ -659,6 +666,11 @@ KPIs are cumulative--they are computed from the campaign start date to the end o
 <li><code>total_upgrades</code>: the total number of users who upgraded their base plan (people, nights, or both) at any point during the period (regardless of subsequent base plan changes)</li>
 <li><code>total_downgrades</code>: the total number of users who downgraded their base plan (people, nights, or both) at any point during the period (regardless of subsequent base plan changes)</li>
 <li><code>ordered_ds</code>: [<em>VALUE SHOULD BE FALSE, OR THE NAME OF A DS</em>] the number of users in this responder segment ordering a box during the specified delivery schedule (delivery schedule must fall within the given period)</li>
+<li><code>gift_cards_purchased</code>: the total number of users in this responder segment purchasing at least one gift card during this period</li>
+<li><code>total_ordered_week_4</code>: the total number of users who placed an order during the 4th week of their subscription (relative to first delivery)</li>
+<li><code>pct_ordered_week_4</code>: the percent of users who placed an order during the 4th week of their subscription (note that this percentage is out of all users in this segment)</li>
+<li><code>avg_num_boxes_first_4_weeks</code>: the average number of boxes ordered by users in the first 4 weeks of their subscription (relative to first delivery)</li>
+<li><code>total_using_the_app</code>: the total number of users who used either the iOS or Android app at least once during the specified period</li>
 </ul>
 </li>
 </ul>

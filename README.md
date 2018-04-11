@@ -47,19 +47,25 @@ Please see example campaign templates for reference. Column names should be iden
   - `campaign_name`: A plain English name for the campaign
   - `campaign_short_name`: A code-friendly name for the campaign. All lowercase, no spaces or special characters except underscores. May include a number but not as the first letter
   - `responder_action`: The defining action that differentiates responders from non-responders. The action must be taken during the promo period. May be one of the following values:
+
     - `reactivated`
     - `activated`
-    - `ordered_{1st/2nd/3rd/nth}_box` for any number n indicating the user has received their nth order during the promo period
-    - `desserts_ordered >= {n}` for any number n indicating the user has ordered at least this many desserts during the promo period
-    - `total_boxes_ordered >= {n}` for any number n indicating the user has ordered at least this many boxes during the promo period
-    - `upgraded`
+    - `ordered_{1st/2nd/3rd/nth}_box` for any number *n* indicating the user has received their nth order during the promo period
+    - `desserts_ordered >= {n}` for any number *n* indicating the user has ordered at least this many desserts during the promo period
+    - `total_boxes_ordered >= {n}` for any number *n* indicating the user has ordered at least this many boxes during the promo period
+    - `upgraded` increased the number of nights, number of servings, or both in their base subscription plan
     - `offer_redeemed`
-    - `ordered_ds_{n}` ordered a box during the delivery schedule named n during the promo period
+    - `ordered_ds_{n}` ordered a box during the delivery schedule named *n* during the promo period
     - `gift_card_purchase`
+    - `ordered_week_4` ordered a box during the 4th week of their subscription (from 1st delivery)
+    - `num_boxes_first_4_weeks >= {}` for any number *n* indicating the user has ordered at least this many boxes during the first four weeks of their subscription (from 1st delivery)
+    - `used_the_app` used the iOS or Android app at least once during the promo period
+
   - `start_date`: the start date for the campaign and promo period
   - `promo_period_end_date`: the end date for the promo period, or `current_date` if still ongoing
   - `post_promo_period_end_date`: the end date for the post promo period, or `current_date` if still ongoing. May be left blank if no post promo period
   - `long_term_end_date`: the end date for the long term read period, or `current_date` if still ongoing. May be left blank if no long term read period
+
   - **Campaign KPIs:** `TRUE` if the KPI is desired and relevant to the campaign,
     `FALSE` if it can be omitted from the reporting.
     KPIs are cumulative--they are computed from the campaign start date to the end of the specified period.
@@ -83,6 +89,11 @@ Please see example campaign templates for reference. Column names should be iden
     - `total_upgrades`: the total number of users who upgraded their base plan (people, nights, or both) at any point during the period (regardless of subsequent base plan changes)
     - `total_downgrades`: the total number of users who downgraded their base plan (people, nights, or both) at any point during the period (regardless of subsequent base plan changes)
     - `ordered_ds`: [*VALUE SHOULD BE FALSE, OR THE NAME OF A DS*] the number of users in this responder segment ordering a box during the specified delivery schedule (delivery schedule must fall within the given period)
+    - `gift_cards_purchased`: the total number of users in this responder segment purchasing at least one gift card during this period
+    - `total_ordered_week_4`: the total number of users who placed an order during the 4th week of their subscription (relative to first delivery)
+    - `pct_ordered_week_4`: the percent of users who placed an order during the 4th week of their subscription (note that this percentage is out of all users in this segment)
+    - `avg_num_boxes_first_4_weeks`: the average number of boxes ordered by users in the first 4 weeks of their subscription (relative to first delivery)
+    - `total_using_the_app`: the total number of users who used either the iOS or Android app at least once during the specified period
 
 ### Test matrix information columns
 (**single value per test matrix row**)

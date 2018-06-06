@@ -110,6 +110,7 @@ def upload_to_redshift(bucket, filename, tbl_name, engine, data, usernames,
 
 def extract_campaign_info(args):
     campaign_dir = Path(args.root_dir, args.campaign_dir).absolute()
+<<<<<<< HEAD
     template_path =  [str(x) for x in
         list(campaign_dir.glob('**/*_template.csv')) +
         list(campaign_dir.glob('**/*_template.xlsx'))][0]
@@ -120,6 +121,10 @@ def extract_campaign_info(args):
             lambda x: pd.to_datetime(x, infer_datetime_format = True))
     else:
         template = pd.read_excel(template_path)
+=======
+    template_path =  [str(x) for x in campaign_dir.glob('**/*_template.xlsx')][0]
+    template = pd.read_excel(template_path)
+>>>>>>> 5c8ff22dc686692cb028ebe56e0b74eed0382d69
     logging.info('Campaign template read from {}'.format(template_path))
 
     test_matrix_cols = ['test_group', 'segment_group', 'offer_group',

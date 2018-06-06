@@ -83,7 +83,7 @@
 .markdown-preview[data-use-github-style] span.float-left span { margin: 13px 0px 0px; }
 .markdown-preview[data-use-github-style] span.float-right { display: block; float: right; margin-left: 13px; overflow: hidden; }
 .markdown-preview[data-use-github-style] span.float-right > span { display: block; margin: 13px auto 0px; overflow: hidden; text-align: right; }
-.markdown-preview[data-use-github-style] code, .markdown-preview[data-use-github-style] tt { padding: 0.2em 0px; margin: 0px; font-size: 85%; background-color: rgba(0, 0, 0, 0.0392157); border-radius: 3px; }
+.markdown-preview[data-use-github-style] code, .markdown-preview[data-use-github-style] tt { padding: 0.2em 0px; margin: 0px; font-size: 85%; background-color: rgba(0, 0, 0, 0.04); border-radius: 3px; }
 .markdown-preview[data-use-github-style] code::before, .markdown-preview[data-use-github-style] tt::before, .markdown-preview[data-use-github-style] code::after, .markdown-preview[data-use-github-style] tt::after { letter-spacing: -0.2em; content: " "; }
 .markdown-preview[data-use-github-style] code br, .markdown-preview[data-use-github-style] tt br { display: none; }
 .markdown-preview[data-use-github-style] del code { text-decoration: inherit; }
@@ -111,48 +111,44 @@
 }
 
 .gutter[gutter-name=diagnostics-gutter] {
-  min-width: 0.5em;
+  width: 0.7em;
 }
-.diagnostics-gutter-ui-gutter-error,
-.diagnostics-gutter-ui-gutter-warning,
-.diagnostics-gutter-ui-gutter-info {
-  text-align: left;
-  display: block;
-  width: 0.8em;
-  transform: scale(0.7);
-  transform-origin: left;
+.diagnostics-gutter-ui-item {
+  display: flex;
 }
-.diagnostics-gutter-ui-gutter-error::before,
-.diagnostics-gutter-ui-gutter-warning::before,
-.diagnostics-gutter-ui-gutter-info::before {
-  font-family: 'Octicons Regular';
-  font-weight: normal;
-  font-style: normal;
-  display: inline-block;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-  text-decoration: none;
-  font-size: 130%;
-  width: 130%;
-  height: 130%;
-  content: "\f05a";
+.diagnostics-gutter-ui-item .icon {
+  display: flex;
+  width: 0.7em;
+  height: 0.7em;
+  font-size: 0.7em;
+  align-self: center;
 }
-.diagnostics-gutter-ui-gutter-error {
+.diagnostics-gutter-ui-item .icon::before {
+  width: 1em;
+  height: 1em;
+  font-size: 1em;
+  margin: 0;
+  align-self: center;
+}
+.diagnostics-gutter-ui-item.diagnostics-gutter-ui-gutter-action,
+.diagnostics-gutter-ui-item.diagnostics-gutter-ui-gutter-info,
+.diagnostics-gutter-ui-item.diagnostics-gutter-ui-gutter-review {
+  color: #6494ed;
+}
+.diagnostics-gutter-ui-item.diagnostics-gutter-ui-gutter-error {
   color: #ff6347;
 }
-.diagnostics-gutter-ui-gutter-warning {
+.diagnostics-gutter-ui-item.diagnostics-gutter-ui-gutter-warning {
   color: #e2c08d;
-}
-.diagnostics-gutter-ui-gutter-info {
-  color: #6494ed;
 }
 
 .bracket-matcher .region {
   border-bottom: 1px dotted lime;
   position: absolute;
 }
-.line-number.bracket-matcher {
-  background-color: #777;
+.line-number.bracket-matcher.bracket-matcher {
+  color: #abb2bf;
+  background-color: #3a3f4b;
 }
 
 .spell-check-misspelling .region {
@@ -210,7 +206,7 @@ pre.editor-colors .gutter .line-number {
 }
 pre.editor-colors .gutter .line-number.cursor-line {
   color: #abb2bf;
-  background-color: #2c313a;
+  background-color: #3a3f4b;
 }
 pre.editor-colors .gutter .line-number.cursor-line-no-selection {
   background-color: transparent;
@@ -398,7 +394,6 @@ pre.editor-colors .fold-marker:after {
   color: #c678dd;
 }
 .syntax--meta.syntax--separator {
-  background-color: #373b41;
   color: #abb2bf;
 }
 .syntax--meta.syntax--tag {
@@ -478,6 +473,10 @@ pre.editor-colors .fold-marker:after {
 .syntax--source.syntax--elixir .syntax--variable.syntax--definition,
 .syntax--source.syntax--elixir .syntax--variable.syntax--anonymous {
   color: #c678dd;
+}
+.syntax--source.syntax--elixir .syntax--parameter.syntax--variable.syntax--function {
+  color: #d19a66;
+  font-style: italic;
 }
 .syntax--source.syntax--elixir .syntax--quoted {
   color: #98c379;
@@ -564,6 +563,9 @@ pre.editor-colors .fold-marker:after {
 .syntax--source.syntax--ruby .syntax--constant.syntax--other.syntax--symbol > .syntax--punctuation {
   color: inherit;
 }
+.syntax--source.syntax--php .syntax--class.syntax--bracket {
+  color: #abb2bf;
+}
 .syntax--source.syntax--python .syntax--keyword.syntax--operator.syntax--logical.syntax--python {
   color: #c678dd;
 }
@@ -572,8 +574,8 @@ pre.editor-colors .fold-marker:after {
 }
 </style>
   </head>
-  <body class='markdown-preview' data-use-github-style><h1>Campaign Reporting Automation</h1>
-<h2>Campaign lists</h2>
+  <body class='markdown-preview' data-use-github-style><h1 id="campaign-reporting-automation">Campaign Reporting Automation</h1>
+<h2 id="campaign-lists">Campaign lists</h2>
 <p>There should be a folder for each campaign, named with the campaign name.
 This folder should contain an Excel file (ending in <code>template.xlsx</code>),
 a <code>Test</code> subfolder, and a <code>Control</code> subfolder. All lists in the <code>Test</code> and
@@ -598,7 +600,7 @@ should correspond to one and only one row of the test matrix for that campaign.<
 <li><code>.csv</code> format (with comma-separation, not tab separation)</li>
 <li><code>.xls/.xlsx</code> format</li>
 </ul>
-<h3>Campaign list columns</h3>
+<h3 id="campaign-list-columns">Campaign list columns</h3>
 <p>The campaign lists must feature at least one of the following <code>user_identifier</code> columns:</p>
 <ul>
 <li><code>user_id</code></li>
@@ -609,13 +611,13 @@ should correspond to one and only one row of the test matrix for that campaign.<
 </ul>
 <p>Additional columns can be included in the campaign lists but will be ignored.
 All campaign lists for the same campaign should feature the same user identifier.</p>
-<h2>Campaign template</h2>
+<h2 id="campaign-template">Campaign template</h2>
 <p>Please see example campaign templates for reference. Column names should be identical for all campaigns.</p>
 <ul>
 <li>Column names highlighted in yellow should be filled out for every row in the test matrix.</li>
 <li>Column names highlighted in blue only need to be filled out for the first row.</li>
 </ul>
-<h3>Campaign information columns</h3>
+<h3 id="campaign-information-columns">Campaign information columns</h3>
 <p>(<strong>single value per campaign</strong>)</p>
 <ul>
 <li><code>campaign_name</code>: A plain English name for the campaign</li>
@@ -634,6 +636,7 @@ All campaign lists for the same campaign should feature the same user identifier
 <li><code>ordered_week_4</code> ordered a box during the 4th week of their subscription (from 1st delivery)</li>
 <li><code>num_boxes_first_4_weeks &gt;= {}</code> for any number <em>n</em> indicating the user has ordered at least this many boxes during the first four weeks of their subscription (from 1st delivery)</li>
 <li><code>used_the_app</code> used the iOS or Android app at least once during the promo period</li>
+<li><code>sent_referral</code> sent at least 1 referral during the promo period</li>
 </ul>
 </li>
 <li><p><code>start_date</code>: the start date for the campaign and promo period</p>
@@ -671,10 +674,11 @@ KPIs are cumulative--they are computed from the campaign start date to the end o
 <li><code>pct_ordered_week_4</code>: the percent of users who placed an order during the 4th week of their subscription (note that this percentage is out of all users in this segment)</li>
 <li><code>avg_num_boxes_first_4_weeks</code>: the average number of boxes ordered by users in the first 4 weeks of their subscription (relative to first delivery)</li>
 <li><code>total_using_the_app</code>: the total number of users who used either the iOS or Android app at least once during the specified period</li>
+<li><code>num_referrals_sent</code>: the total number of referrals sent during the specified period, whether or not they were redeemed</li>
 </ul>
 </li>
 </ul>
-<h3>Test matrix information columns</h3>
+<h3 id="test-matrix-information-columns">Test matrix information columns</h3>
 <p>(<strong>single value per test matrix row</strong>)</p>
 <ul>
 <li><code>test_group</code>: Test or Control</li>
@@ -687,5 +691,15 @@ KPIs are cumulative--they are computed from the campaign start date to the end o
 <li><code>discount_name</code>: value of <code>Discount Name</code> column in Admin/Offer Campaigns (<em>for offer campaigns</em>) or value of <code>Name</code> column in Admin/Discounts (<em>for mass discounts</em>). Blank if no offer sent</li>
 <li><code>message_offer</code>: message or offer description sent</li>
 </ul>
-<h2>Reporting metrics</h2></body>
+<h2 id="formatting-requirement-reminders">Formatting requirement reminders</h2>
+<ul>
+<li>Please save the template file in Excel format (<code>.xlsx</code>) and not <code>.csv</code></li>
+<li>Every name in target_name should match exactly to the filename of the corresponding send list file, without the csv part. If a particular target group happens to be split into multiple files, the target name should match exactly to the beginning of the filename</li>
+<li>Excel tends to incorrectly round/reformat <code>external_user_id</code>. Please remove any external_user_id columns from the send lists, and just use email</li>
+<li>If you want the data pulled up to today, please use <code>current_date</code>, not <code>current_day</code> or any other expression</li>
+<li><code>ordered_box</code> is not a valid responder metric, use <code>total_boxes_ordered &gt; 0</code> (or greater than <code>&gt;</code>/ greater than or equal to <code>&gt;=</code> however many number of boxes)</li>
+<li><code>ordered_nth_box</code> should either be <code>FALSE</code>, or the number box/boxes you are interested in separated by commas (for example <code>5,10</code>)</li>
+<li>ordered_ds should either be <code>FALSE</code>, or the name of the DS you are interested in (for example <code>1815</code>)</li>
+<li>Please confirm we are using an up-to-date template, meaning that the metric columns go up to <code>num_referrals_sent</code> in the template</li>
+</ul></body>
 </html>

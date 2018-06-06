@@ -37,17 +37,17 @@ def process_send_lists(campaign_dir, test_matrix):
     return data
 
 def process_single_file(path, target):
-    id_cols = ['user_id', 'internal_user_id', 'external_id',
-               'prospect_id', 'email', 'email_address']
+    id_cols = ['user_id', 'internal_user_id', 'prospect_id',
+               'email', 'email_address']
 
     if path.endswith('csv'):
         try:
-            data = pd.read_csv(path,
-                usecols = lambda x: x.lower().replace(' ', '_') in id_cols)
+            data = pd.read_csv(path, header=0,
+                usecols=lambda x: x.lower().replace(' ', '_') in id_cols)
         except UnicodeDecodeError:
-            data = pd.read_csv(path,
-                usecols = lambda x: x.lower().replace(' ', '_') in id_cols,
-                encoding = 'iso-8859-1')
+            data = pd.read_csv(path, header=0,
+                usecols=lambda x: x.lower().replace(' ', '_') in id_cols,
+                encoding='iso-8859-1')
     else:
         data = pd.read_excel(path).drop()
         keep_cols = [col for col in data.columns
@@ -62,12 +62,12 @@ def process_single_file(path, target):
 
 
 def upload_to_s3(data, bucket, s3dir, info):
-    s3_writer = S3ReadWrite(bucket = bucket, folder = s3dir)
+    s3_writer = S3ReadWrite(bucket=bucket, folder=s3dir)
     logging.info('S3ReadWrite created in {}'.format(str(s3_writer)))
     csv_path = info.campaign_name.strip()
     csv_name = info.campaign_short_name.strip().lower()
-    s3_writer.put_dataframe_to_S3(csv_path = csv_path,
-        csv_name = csv_name, dataframe = data)
+    s3_writer.put_dataframe_to_S3(csv_path=csv_path,
+                                  csv_name=csv_name, dataframe=data)
     fullpath = str(Path(s3dir, csv_path, '{}.csv'.format(csv_name)))
     logging.info('data saved in S3 bucket at {}'.format(fullpath))
     return fullpath, csv_name
@@ -158,6 +158,7 @@ def update_campaign_table(data, engine, args, usernames, campaign_info):
         FROM analytics.{} a
         LEFT JOIN dw.users u
         ON u.internal_marketing_prospect_id = a.prospect_id
+        AND u.internal_user_id is not null
         """.format(tbl_name)
 
         data = pd.read_sql_query(text(join_query), engine)
@@ -170,6 +171,7 @@ def update_campaign_table(data, engine, args, usernames, campaign_info):
         FROM analytics.{} a
         LEFT JOIN dw.users u
         ON u.external_id = a.external_id
+        AND u.internal_user_id is not null
         """.format(tbl_name)
 
         data = pd.read_sql_query(text(join_query), engine)
@@ -182,6 +184,7 @@ def update_campaign_table(data, engine, args, usernames, campaign_info):
         FROM analytics.{} a
         LEFT JOIN dw.users u
         ON u.email = a.email
+        AND u.internal_user_id is not null
         """.format(tbl_name)
 
         data = pd.read_sql_query(text(join_query), engine)

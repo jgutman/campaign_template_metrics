@@ -5,12 +5,10 @@ import logging, re, sys
 from datetime import datetime
 from argparse import ArgumentParser
 from pathlib import Path
-from .upload_redshift import extract_campaign_info
-
+from process_campaign.upload_redshift import extract_campaign_info
 
 def offer_redemption(tm):
     if not tm.offer_campaign_name.isnull().all():
-
         return """LEFT JOIN dw.marketing_offers md
         ON md.internal_user_id = a.user_id
         AND md.offer_campaign_name = a.offer_campaign_name
@@ -19,7 +17,6 @@ def offer_redemption(tm):
         """
 
     elif not tm.discount_name.isnull().all():
-
         return """LEFT JOIN web.discounts d
         ON d.name = a.discount_name
         LEFT JOIN web.users_discounts ud
@@ -39,17 +36,18 @@ def build_query(info, test_matrix):
         info.campaign_short_name.strip().lower())
 
     promo_periods = (info[[col for col in info.dropna().index
-        if col.endswith('_end_date')]]
-        .apply(lambda x: (datetime.now() if x == 'current_date' else x)
-        .strftime('%Y-%m-%d')))
+                          if col.endswith('_end_date')]]
+        .apply(lambda x: (x if x == 'current_date'
+                          else "'{}'".format(pd.to_datetime(x).date())
+                          )))
     promo_periods.index = [x.replace('_end_date', '')
-        for x in promo_periods.index]
+                           for x in promo_periods.index]
 
-    start_date = info.start_date.strftime('%Y-%m-%d')
+    start_date = pd.to_datetime(info.start_date).date()
 
     promo_period_query = "\n    UNION ALL\n    ".join([
         """SELECT '{}' AS promo_period,
-        '{}' AS end_date""".format(k, v)
+        {} AS end_date""".format(k, v)
         for k,v in promo_periods.iteritems()])
 
     discounts_query = offer_redemption(test_matrix)
@@ -63,6 +61,7 @@ def build_query(info, test_matrix):
     {promo_period_query}
     ) pp
     WHERE a.target_name IN ({targets})
+    and a.user_id is not null
     """.format(
         tbl_name = tbl_name,
         offer_redeemed =
@@ -104,18 +103,17 @@ def build_query(info, test_matrix):
     if inc_subscription_changes:
         subscription_changes = """SELECT a.user_id
             , a.promo_period
-            {change_q} = 'activation') AS activated
-            {change_q} = 'reactivation') AS reactivated
-            {change_q} = 'cancelation') AS canceled
+            {change_q} = 0) AS activated
+            {change_q} = 1) AS reactivated
+            {change_q} = 2) AS canceled
         FROM campaign_lists a
-        INNER JOIN dw.user_subscription_events use
-            ON a.user_id = use.internal_user_id
+        INNER JOIN web.user_membership_status_changes use
+            ON a.user_id = use.user_id
             AND DATE(convert_timezone('America/New_York',
-            subscription_changed_at))
-            BETWEEN '{start_date}' AND a.end_date
+            created_at)) BETWEEN '{start_date}' AND a.end_date
         GROUP BY 1,2
         """.format(
-            change_q = ', bool_or( subscription_status_change_event',
+            change_q = ', bool_or( change_type ',
             start_date = start_date)
 
         boolean_metrics.extend(['activated', 'reactivated', 'canceled'])
@@ -381,7 +379,7 @@ def build_query(info, test_matrix):
     aggregates = """SELECT a.promo_period
         , '{start_date}' AS start_date
         , a.end_date
-        , r.{responder_action} AS responder
+        , {responder_action} AS responder
         , {test_matrix_cols}
         , COUNT(DISTINCT a.user_id) AS total_segment_size
         {agg_bools}
@@ -393,7 +391,8 @@ def build_query(info, test_matrix):
     GROUP BY {join_nums}
     """.format(
         start_date = start_date,
-        responder_action = info.responder_action,
+        responder_action = ('TRUE' if info.responder_action == 1
+                                   else 'r.' + info.responder_action),
         test_matrix_cols = '\n    , '.join('a.{}'.format(col) for col in test_matrix.columns),
         agg_bools = '\n    '.join(aggregate_boolean),
         agg_nums = '\n    '.join(aggregate_numeric),
@@ -425,22 +424,23 @@ def compute_and_output_metrics(data, info, path, tm_cols):
 
     id_cols = ['target_name', 'responder']
 
-    totals = data[id_cols + ['segment_responder_size']].groupby('target_name')
-    response_rates = {target: data.loc[data.responder == True,
-        'segment_responder_size'] / data.segment_responder_size.sum()
-        for target, data in totals}
-    response_rates = pd.Series({target: v.iloc[0]
-        if len(v) else 0 for target, v in response_rates.items()},
+    totals = (data[id_cols + ['segment_responder_size']]
+              .drop_duplicates()
+              .groupby('target_name'))
+    response_rates = {target: df.loc[df.responder == True,
+        'segment_responder_size'] / df.segment_responder_size.sum()
+        for target, df in totals}
+    response_rates = pd.Series(
+        {target: v.iloc[0] if len(v) else 0
+                 for target, v in response_rates.items()},
         name = 'response_rate')
     data = data.join(response_rates, on = 'target_name')
-    data['response_rate'] = ["{:.2%}".format(k)
-        for k in data.response_rate]
+    data['response_rate'] = ["{:.2%}".format(k) for k in data.response_rate]
 
     unpivot_cols = [x for x in tm_cols if x != 'target_name']
     unpivot_cols.extend(['segment_responder_size', 'response_rate'])
     tm_data = data[id_cols + unpivot_cols].drop_duplicates()
     tm_data = tm_data.set_index(id_cols)
-
 
     data['date_range'] = ['{} - {}'.format(i.start_date.strftime('%m/%d'),
         i.end_date.strftime('%m/%d'))
@@ -564,8 +564,8 @@ def main(args):
     query = build_query(campaign_info, test_matrix)
     with open(str(Path(campaign_dir, 'generated_query.sql')), 'w') as f:
         f.write(query)
-    logging.info('Query generated and written to disk at {}'.format(
-        str(Path(campaign_dir, 'generated_query.sql'))))
+    logging.info('Query generated and written to disk at {}'
+                 .format(str(Path(campaign_dir, 'generated_query.sql'))))
 
     engine = create_engine("{driver}://{host}:{port}/{dbname}".format(
           driver = "postgresql+psycopg2",
@@ -581,14 +581,14 @@ def main(args):
 
     data = pd.read_sql_query(text(query), engine,
         parse_dates = ['start_date', 'end_date'])
-    logging.info('Aggregate data pulled successfully from analytics.{}'.format(
-        tbl_name))
+    logging.info('Aggregate data pulled successfully from analytics.{}'
+                 .format(tbl_name))
 
-    output_file = '{}_report_metrics.csv'.format(
-        campaign_info.campaign_name.strip())
+    output_file = ('{}_report_metrics.csv'
+                   .format(campaign_info.campaign_name.strip()))
     compute_and_output_metrics(data, campaign_info,
-        tm_cols = test_matrix.columns,
-        path = Path(campaign_dir, output_file))
+                               tm_cols = test_matrix.columns,
+                               path = Path(campaign_dir, output_file))
 
 
 if __name__ == '__main__':

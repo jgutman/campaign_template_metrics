@@ -60,6 +60,7 @@ Please see example campaign templates for reference. Column names should be iden
     - `ordered_week_4` ordered a box during the 4th week of their subscription (from 1st delivery)
     - `num_boxes_first_4_weeks >= {}` for any number *n* indicating the user has ordered at least this many boxes during the first four weeks of their subscription (from 1st delivery)
     - `used_the_app` used the iOS or Android app at least once during the promo period
+    - `sent_referral` sent at least 1 referral during the promo period
 
   - `start_date`: the start date for the campaign and promo period
   - `promo_period_end_date`: the end date for the promo period, or `current_date` if still ongoing
@@ -94,6 +95,7 @@ Please see example campaign templates for reference. Column names should be iden
     - `pct_ordered_week_4`: the percent of users who placed an order during the 4th week of their subscription (note that this percentage is out of all users in this segment)
     - `avg_num_boxes_first_4_weeks`: the average number of boxes ordered by users in the first 4 weeks of their subscription (relative to first delivery)
     - `total_using_the_app`: the total number of users who used either the iOS or Android app at least once during the specified period
+    - `num_referrals_sent`: the total number of referrals sent during the specified period, whether or not they were redeemed
 
 ### Test matrix information columns
 (**single value per test matrix row**)
@@ -108,4 +110,12 @@ Please see example campaign templates for reference. Column names should be iden
   - `discount_name`: value of `Discount Name` column in Admin/Offer Campaigns (*for offer campaigns*) or value of `Name` column in Admin/Discounts (*for mass discounts*). Blank if no offer sent
   - `message_offer`: message or offer description sent
 
-## Reporting metrics
+## Formatting requirement reminders
+- Please save the template file in Excel format (`.xlsx`) and not `.csv`
+- Every name in target_name should match exactly to the filename of the corresponding send list file, without the csv part. If a particular target group happens to be split into multiple files, the target name should match exactly to the beginning of the filename
+- Excel tends to incorrectly round/reformat `external_user_id`. Please remove any external_user_id columns from the send lists, and just use email
+- If you want the data pulled up to today, please use `current_date`, not `current_day` or any other expression
+- `ordered_box` is not a valid responder metric, use `total_boxes_ordered > 0` (or greater than `>`/ greater than or equal to `>=` however many number of boxes)
+- `ordered_nth_box` should either be `FALSE`, or the number box/boxes you are interested in separated by commas (for example `5,10`)
+- ordered_ds should either be `FALSE`, or the name of the DS you are interested in (for example `1815`)
+- Please confirm we are using an up-to-date template, meaning that the metric columns go up to `num_referrals_sent` in the template
